@@ -531,6 +531,16 @@ namespace ProceduralToolkit
         }
 
         /// <summary>
+        /// Constructs a dome draft
+        /// </summary>
+        public static MeshDraft Dome(float radius, int horizontalSegments, int verticalSegments, bool generateUV = true, float domeDegrees = 0f)
+        {
+            var draft = Spheroid(radius, radius, horizontalSegments, verticalSegments, generateUV, domeDegrees);
+            draft.name = "Dome";
+            return draft;
+        }
+
+        /// <summary>
         /// Constructs a sphere draft
         /// </summary>
         public static MeshDraft Sphere(float radius, int horizontalSegments, int verticalSegments, bool generateUV = true)
@@ -543,9 +553,9 @@ namespace ProceduralToolkit
         /// <summary>
         /// Constructs a spheroid draft
         /// </summary>
-        public static MeshDraft Spheroid(float radius, float height, int horizontalSegments, int verticalSegments, bool generateUV = true)
+        public static MeshDraft Spheroid(float radius, float height, int horizontalSegments, int verticalSegments, bool generateUV = true, float domeDegrees = 0f)
         {
-            var draft = RevolutionSurface(PTUtils.PointOnSpheroid, radius, height, horizontalSegments, verticalSegments, generateUV);
+            var draft = RevolutionSurface(PTUtils.PointOnSpheroid, radius, height, horizontalSegments, verticalSegments, generateUV, domeDegrees);
             draft.name = "Spheroid";
             return draft;
         }
@@ -569,7 +579,8 @@ namespace ProceduralToolkit
             float height,
             int horizontalSegments,
             int verticalSegments,
-            bool generateUV = true)
+            bool generateUV = true,
+            float domeDegrees = 0f)
         {
             var draft = new MeshDraft {name = "Revolution surface"};
 
@@ -577,7 +588,17 @@ namespace ProceduralToolkit
             float verticalSegmentAngle = 180f/verticalSegments;
             float currentVerticalAngle = -90;
 
-            for (int y = 0; y <= verticalSegments; y++)
+            // Calculate vertical segments required if we need to build a dome
+            if (domeDegrees != 0f)
+            {
+                verticalSegments = (int)(domeDegrees / (360f / verticalSegments));
+            }
+
+            int startY = 0;
+            int endY = verticalSegments;
+            int stepY = 1;
+
+            for (int y = startY; (stepY == 1 ? y <= endY : y >= endY); y += stepY)
             {
                 float currentHorizontalAngle = 0f;
                 for (int x = 0; x <= horizontalSegments; x++)
@@ -596,7 +617,7 @@ namespace ProceduralToolkit
 
             // Extra vertices due to the uvmap seam
             int horizontalCount = horizontalSegments + 1;
-            for (int ring = 0; ring < verticalSegments; ring++)
+            for (int ring = (startY > 0 ? startY - 1 : startY); (stepY == 1 ? ring < endY : ring > endY); ring += stepY)
             {
                 for (int i = 0; i < horizontalCount - 1; i++)
                 {

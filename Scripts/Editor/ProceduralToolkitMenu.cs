@@ -21,6 +21,7 @@ namespace ProceduralToolkit.Editor
 
         private const string pyramid = "Pyramid";
         private const string prism = "Prism";
+        private const string dome = "Dome";
 
         private static void PrimitiveTemplate(string name, Func<Mesh> mesh)
         {
@@ -72,6 +73,13 @@ namespace ProceduralToolkit.Editor
         {
             PrimitiveTemplate(prism, () => MeshDraft.Prism(0.5f, 16, 2).ToMesh());
         }
+
+        [MenuItem(primitivesPath + dome)]
+        public static void Dome()
+        {
+            PrimitiveTemplate(dome, () => MeshDraft.Dome(0.5f, 16, 16, true, 240).ToMesh());
+        }
+
 
         #endregion Other
     }
